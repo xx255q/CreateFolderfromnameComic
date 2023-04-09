@@ -1,5 +1,5 @@
 # XXBagofScriptsforAutomation
-There is now a number of scripts to hopefully help you:
+There is now a number of scripts to hopefully help you from moving a first download folder of a weeks comics, convert them to a certain format, then moving to your last (main location) or for an existing library scripts to help filter:
 
 
 Takes the name of comic files and makes a folder with just the name then moves the comics over
