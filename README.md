@@ -1,6 +1,12 @@
 # XXBagofScriptsforAutomation
 There is now a number of scripts to hopefully help you from moving a first download folder of a weeks comics, convert them to a certain format, then moving to your last (main location) or for an existing library scripts to help filter:
 
+Weekly Comic Automate scripts
+1. use Windows to run run_all_scripts for example Weekly which will run the other three in order
+2. move_weekly_to_converted - Moves all cbz and other comic files from all folders/subfolders to another location
+3. convert_and_organize - Take a name like Spiderman Unbound 04 (2023)(Digital City) and creates a folder called Spiderman Unbound then moves the file into it
+4. move_to_nas - Moves the now organized files to a network drive and should delete the original files
+
 
 Takes the name of comic files and makes a folder with just the name then moves the comics over
 Difference between MCV 3.0 and 3.1:
