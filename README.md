@@ -34,8 +34,29 @@ It creates a new subfolder with the main title of the comic if it doesn't exist.
 The second_scan function performs a second scan of the converted folder and moves all files with a .cbr or .cbz extension to a Done folder. 
 Again, it creates a new subfolder with the main title of the comic if it doesn't exist. The remove_brackets function removes brackets from the end of folder names.
 
-Overall, this script appears to automate the process of organizing comic book files by moving them to specific folders and creating subfolders based on the main title of each comic. 
+Overall, this script automates the process of organizing comic book files by moving them to specific folders and creating subfolders based on the main title of each comic. 
 It also logs all actions taken by the script.
+
+6.2 Main Features:
+Feature List:
+
+File Extension Filtering: The script processes files with specific extensions: .cbr, .cbz, .pdf, and .epub.
+
+Folder Title Extraction: The script extracts folder titles from file names by removing file extensions, contents inside square brackets and parentheses, unwanted characters, issue numbers, and years.
+
+Folder Creation: If the destination folder does not exist, the script creates it automatically.
+
+File Moving: The script moves comic files from the source folder to their corresponding destination folders, based on the extracted folder titles.
+
+Error Handling and Retries: If an error occurs during file moving, the script retries up to 3 times, waiting 5 seconds between attempts.
+
+Conflict Resolution: If a file with the same name already exists in the destination, the user can choose to overwrite, rename, or skip the file.
+
+User Confirmation: After moving all files, the user is prompted to confirm if they want to keep the changes or revert them.
+
+Reversing Changes: If the user decides to revert changes, the script moves the files back to their original locations and deletes any newly created folders.
+
+Logging: The script logs all actions (including errors) with timestamps to a log file named 'comics_script.log'.
 
 Filter_and_merge:
 
