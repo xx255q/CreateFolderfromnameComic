@@ -7,6 +7,9 @@ def main():
     source_folder = r"G:\Programs\Comics\Converted"
     destination_folder = r"G:\Programs\Comics\Done"
 
+    moved_files = []
+    created_folders = []
+
     for root, dirs, files in os.walk(source_folder):
         for file in files:
             if file.endswith(('.cbr', '.cbz', '.pdf', '.epub')):
@@ -17,12 +20,40 @@ def main():
                 if not os.path.exists(new_folder_path):
                     os.makedirs(new_folder_path)
                     log(f'Created new folder: {new_folder_path}')
+                    created_folders.append(new_folder_path)
 
+                new_file_path = os.path.join(new_folder_path, file)
                 try:
-                    shutil.move(filepath, new_folder_path)
-                    log(f"Moved {file} to {new_folder_path}")
+                    shutil.move(filepath, new_file_path)
+                    log(f"Moved {file} to {new_file_path}")
+                    moved_files.append((filepath, new_file_path))
                 except Exception as e:
                     log(f"Error moving {file}: {str(e)}")
+
+    user_input = input("Keep the move? (y/n): ")
+    if user_input.lower() == 'n':
+        reverse_changes(moved_files, created_folders)
+
+# ... (rest of the code remains the same)
+
+
+def reverse_changes(moved_files, created_folders):
+    for original_path, new_path in moved_files:
+        try:
+            shutil.move(new_path, original_path)
+            log(f"Moved {os.path.basename(new_path)} back to {original_path}")
+        except Exception as e:
+            log(f"Error moving {os.path.basename(new_path)} back: {str(e)}")
+
+    for folder in created_folders:
+        try:
+            os.rmdir(folder)
+            log(f"Deleted folder: {folder}")
+        except Exception as e:
+            log(f"Error deleting folder {folder}: {str(e)}")
+
+# ... (rest of the code remains the same)
+
 
 def log(message):
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
