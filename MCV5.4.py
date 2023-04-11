@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import datetime
 
 def main():
     source_folder = r"G:\Programs\Comics\Converted"
@@ -15,14 +16,19 @@ def main():
 
                 if not os.path.exists(new_folder_path):
                     os.makedirs(new_folder_path)
-                    print(f'Created new folder: {new_folder_path}')
+                    log(f'Created new folder: {new_folder_path}')
 
                 try:
                     shutil.move(filepath, new_folder_path)
-                    print(f"Moved {file} to {new_folder_path}")
+                    log(f"Moved {file} to {new_folder_path}")
                 except Exception as e:
-                    print(f"Error moving {file}: {str(e)}")
+                    log(f"Error moving {file}: {str(e)}")
 
+def log(message):
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    with open('comics_script.log', 'a') as log_file:
+        log_file.write(f'{timestamp}: {message}\n')
+    print(message)
 
 def extract_folder_title(file):
     # Remove file extension
@@ -51,8 +57,6 @@ def extract_folder_title(file):
         cleaned_title = cleaned_title.replace("AD prog", "2000AD")
 
     return cleaned_title
-
-
 
 if __name__ == "__main__":
     main()
