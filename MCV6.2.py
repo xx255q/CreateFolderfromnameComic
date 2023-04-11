@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 import datetime
+import time
 
 def main():
     source_folder = r"G:\Programs\Comics\Converted"
@@ -23,17 +24,40 @@ def main():
                     created_folders.append(new_folder_path)
 
                 new_file_path = os.path.join(new_folder_path, file)
-                try:
-                    shutil.move(filepath, new_file_path)
-                    log(f"Moved {file} to {new_file_path}")
-                    moved_files.append((filepath, new_file_path))
-                except Exception as e:
-                    log(f"Error moving {file}: {str(e)}")
+                move_success = False
+                retries = 3
+                while not move_success and retries > 0:
+                    try:
+                        shutil.move(filepath, new_file_path)
+                        log(f"Moved {file} to {new_file_path}")
+                        moved_files.append((filepath, new_file_path))
+                        move_success = True
+                    except shutil.Error as e:
+                        if "already exists" in str(e):
+                            action = input(f"{file} already exists in destination. Overwrite (o), rename (r), or skip (s)? ")
+                            if action.lower() == 'o':
+                                os.remove(new_file_path)
+                                continue
+                            elif action.lower() == 'r':
+                                new_file_path = input("Enter new file name: ")
+                                continue
+                            elif action.lower() == 's':
+                                break
+                        else:
+                            log(f"Error moving {file}: {str(e)}")
+                            break
+                    except Exception as e:
+                        log(f"Error moving {file}: {str(e)}")
+                        if retries > 1:
+                            log(f"Retrying in 5 seconds... ({retries - 1} retries left)")
+                            time.sleep(5)
+                        retries -= 1
+                if not move_success:
+                    log(f"Failed to move {file} after multiple attempts")
 
     user_input = input("Keep the move? (y/n): ")
     if user_input.lower() == 'n':
         reverse_changes(moved_files, created_folders)
-
 
 def reverse_changes(moved_files, created_folders):
     for original_path, new_path in moved_files:
