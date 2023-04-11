@@ -34,8 +34,6 @@ def main():
     if user_input.lower() == 'n':
         reverse_changes(moved_files, created_folders)
 
-# ... (rest of the code remains the same)
-
 
 def reverse_changes(moved_files, created_folders):
     for original_path, new_path in moved_files:
@@ -51,9 +49,6 @@ def reverse_changes(moved_files, created_folders):
             log(f"Deleted folder: {folder}")
         except Exception as e:
             log(f"Error deleting folder {folder}: {str(e)}")
-
-# ... (rest of the code remains the same)
-
 
 def log(message):
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
