@@ -7,14 +7,6 @@ Weekly Comic Automate scripts
 3. convert_and_organize - Take a name like Spiderman Unbound 04 (2023)(Digital City) and creates a folder called Spiderman Unbound then moves the file into it
 4. move_to_nas - Moves the now organized files to a network drive and should delete the original files
 
-
-Takes the name of comic files and makes a folder with just the name then moves the comics over
-Difference between MCV 3.0 and 3.1:
-
-1. 2000AD specific rule to create folder (This needs to be before scans)
-2. Rule to remove "("
-
-
 Scan and Scan2.0:
 
 This Python script searches for similar folders within a root folder. 
@@ -36,6 +28,12 @@ Again, it creates a new subfolder with the main title of the comic if it doesn't
 
 Overall, this script automates the process of organizing comic book files by moving them to specific folders and creating subfolders based on the main title of each comic. 
 It also logs all actions taken by the script.
+
+Takes the name of comic files and makes a folder with just the name then moves the comics over
+Difference between MCV 3.0 and 3.1:
+
+1. 2000AD specific rule to create folder (This needs to be before scans)
+2. Rule to remove "("
 
 6.2 Main Features:
 Feature List:
