@@ -9,7 +9,7 @@ def main():
 
     for root, dirs, files in os.walk(source_folder):
         for file in files:
-            if file.endswith('.cbr') or file.endswith('.cbz'):
+            if file.endswith(('.cbr', '.cbz', '.pdf', '.epub')):
                 filepath = os.path.join(root, file)
                 folder_title = extract_folder_title(file)
                 new_folder_path = os.path.join(destination_folder, folder_title)
