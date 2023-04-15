@@ -27,14 +27,23 @@ def main():
                 os.makedirs(dest_dir)
                 print(f'Created new folder: {dest_dir}')
 
+            successful_moves = 0
+            total_files = len(os.listdir(src_dir))
+
             for subdir, subdirs, subfiles in os.walk(src_dir):
                 for file in subfiles:
                     src_file = os.path.join(subdir, file)
                     dest_file = os.path.join(dest_dir, file)
-                    shutil.move(src_file, dest_file)
-                    print(f"Moved {src_file} to {dest_file}")
+                    
+                    try:
+                        shutil.move(src_file, dest_file)
+                        print(f"Moved {src_file} to {dest_file}")
+                        successful_moves += 1
+                    except Exception as e:
+                        print(f"Error: Failed to move {src_file} to {dest_file}")
+                        print(str(e))
 
-            if set(os.listdir(src_dir)) == set(os.listdir(dest_dir)):
+            if successful_moves == total_files:
                 shutil.rmtree(src_dir)
                 print(f"Deleted original folder: {src_dir}")
                 moved_folders.append(src_dir)
