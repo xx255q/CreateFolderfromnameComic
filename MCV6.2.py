@@ -2,107 +2,141 @@ import os
 import re
 import shutil
 import datetime
-import time
+import json
+from pathlib import Path
+
+CONFIG_FILE = f"{Path(__file__).stem}_config.json"
+
+def get_folder_paths():
+    last_saved = False
+    source_folder = ""
+    destination_folder = ""
+
+    while not last_saved:
+        use_last_saved = input("Use last saved paths? (y/n): ")
+        if use_last_saved.lower() == 'y':
+            try:
+                config = load_config(CONFIG_FILE)
+                source_folder = config["source_folder"]
+                destination_folder = config["destination_folder"]
+                last_saved = True
+            except FileNotFoundError:
+                print("No last saved paths found. Please enter new paths.")
+        elif use_last_saved.lower() == 'n':
+            source_folder = input("Enter source folder path: ")
+            destination_folder = input("Enter destination folder path: ")
+            if validate_paths(source_folder, destination_folder):
+                confirm = input(f"Confirm new paths:\nSource: {source_folder}\nDestination: {destination_folder}\n(y/n): ")
+                if confirm.lower() == 'y':
+                    save_config(CONFIG_FILE, source_folder, destination_folder)
+                    last_saved = True
+                else:
+                    print("Please re-enter paths.")
+            else:
+                print("Invalid paths. Please enter valid paths.")
+        else:
+            print("Invalid input. Please enter 'y' or 'n'.")
+
+    return source_folder, destination_folder
+    
+def load_config(file_path):
+    with open(file_path, 'r') as config_file:
+        config = json.load(config_file)
+    return config
+
+def save_config(file_path, source_folder, destination_folder):
+    config = {
+        "source_folder": source_folder,
+        "destination_folder": destination_folder
+    }
+    with open(file_path, 'w') as config_file:
+        json.dump(config, config_file)
 
 def main():
-    source_folder = r"G:\Programs\Comics\Converted"
-    destination_folder = r"G:\Programs\Comics\Done"
+    source_folder, destination_folder = get_folder_paths()
+    moved_files, created_folders = move_comics(source_folder, destination_folder)
+    log(f"Moved {len(moved_files)} files and created {len(created_folders)} new folders.")
 
+def validate_paths(source, destination):
+    source_path = Path(source)
+    destination_path = Path(destination)
+
+    if source_path.exists() and source_path.is_dir() and destination_path.exists() and destination_path.is_dir():
+        return True
+    return False
+
+def move_comics(source_folder, destination_folder):
     moved_files = []
     created_folders = []
 
     for root, dirs, files in os.walk(source_folder):
         for file in files:
             if file.endswith(('.cbr', '.cbz', '.pdf', '.epub')):
-                filepath = os.path.join(root, file)
+                filepath = Path(root, file)
                 folder_title = extract_folder_title(file)
-                new_folder_path = os.path.join(destination_folder, folder_title)
+                new_folder_path = Path(destination_folder, folder_title)
 
-                if not os.path.exists(new_folder_path):
+                if not new_folder_path.exists():
                     os.makedirs(new_folder_path)
                     log(f'Created new folder: {new_folder_path}')
                     created_folders.append(new_folder_path)
 
-                new_file_path = os.path.join(new_folder_path, file)
-                move_success = False
-                retries = 3
-                while not move_success and retries > 0:
-                    try:
-                        shutil.move(filepath, new_file_path)
-                        log(f"Moved {file} to {new_file_path}")
-                        moved_files.append((filepath, new_file_path))
-                        move_success = True
-                    except shutil.Error as e:
-                        if "already exists" in str(e):
-                            action = input(f"{file} already exists in destination. Overwrite (o), rename (r), or skip (s)? ")
-                            if action.lower() == 'o':
-                                os.remove(new_file_path)
-                                continue
-                            elif action.lower() == 'r':
-                                new_file_path = input("Enter new file name: ")
-                                continue
-                            elif action.lower() == 's':
-                                break
-                        else:
-                            log(f"Error moving {file}: {str(e)}")
-                            break
-                    except Exception as e:
-                        log(f"Error moving {file}: {str(e)}")
-                        if retries > 1:
-                            log(f"Retrying in 5 seconds... ({retries - 1} retries left)")
-                            time.sleep(5)
-                        retries -= 1
-                if not move_success:
-                    log(f"Failed to move {file} after multiple attempts")
+                new_file_path = new_folder_path / file
+                move_file_with_retry(filepath, new_file_path, moved_files)
 
-    user_input = input("Keep the move? (y/n): ")
-    if user_input.lower() == 'n':
-        reverse_changes(moved_files, created_folders)
+    return moved_files, created_folders
 
-def reverse_changes(moved_files, created_folders):
-    for original_path, new_path in moved_files:
+def move_file_with_retry(source, destination, moved_files):
+    move_success = False
+    retries = 3
+    while not move_success and retries > 0:
         try:
-            shutil.move(new_path, original_path)
-            log(f"Moved {os.path.basename(new_path)} back to {original_path}")
+            shutil.move(str(source), str(destination))
+            log(f"Moved {source.name} to {destination}")
+            moved_files.append((source, destination))
+            move_success = True
+        except shutil.Error as e:
+            handle_shutil_error(e, source, destination)
+            break
         except Exception as e:
-            log(f"Error moving {os.path.basename(new_path)} back: {str(e)}")
+            log(f"Error moving {source.name}: {str(e)}")
+            if retries > 1:
+                log(f"Retrying in 5 seconds... ({retries - 1} retries left)")
+                time.sleep(5)
+            retries -= 1
+    if not move_success:
+        log(f"Failed to move {source.name} after multiple attempts")
 
-    for folder in created_folders:
-        try:
-            os.rmdir(folder)
-            log(f"Deleted folder: {folder}")
-        except Exception as e:
-            log(f"Error deleting folder {folder}: {str(e)}")
+def handle_shutil_error(e, source, destination):
+    if "already exists" in str(e):
+        action = input(f"{source.name} already exists in destination. Overwrite (o), rename (r), or skip (s)? ")
+        if action.lower() == 'o':
+            os.remove(str(destination))
+        elif action.lower() == 'r':
+            new_file_name = input("Enter new file name: ")
+            destination = destination.parent / new_file_name
+            shutil.move(str(source), str(destination))
+            log(f"Moved {source.name} to {destination} (renamed)")
+        elif action.lower() == 's':
+            return
+    else:
+        log(f"Error moving {source.name}: {str(e)}")
 
-def log(message):
+def log(message, level='info'):
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    with open('comics_script.log', 'a') as log_file:
-        log_file.write(f'{timestamp}: {message}\n')
+    log_levels = {'info': logging.INFO, 'warning': logging.WARNING, 'error': logging.ERROR}
+    logging.log(log_levels[level], f'{timestamp}: {message}')
     print(message)
 
 def extract_folder_title(file):
-    # Remove file extension
-    cleaned_title = os.path.splitext(file)[0]
-
-    # Remove content inside square brackets and parentheses
+    cleaned_title = Path(file).stem
     cleaned_title = re.sub(r'\[.*?\]|\(.*?\)', '', cleaned_title)
-
-    # Remove unwanted characters (keep only alphanumeric, whitespace characters, hyphen, and parentheses)
     cleaned_title = re.sub(r'[^\w\s\-\(\)]', '', cleaned_title)
-
-    # Remove issue numbers followed by a year (4 digits)
     cleaned_title = re.sub(r'\d{1,3}(?=\s*\d{4})', '', cleaned_title)
-
-    # Remove the year itself
     cleaned_title = re.sub(r'\d{4}', '', cleaned_title)
-
-    # Remove any trailing or leading spaces
     cleaned_title = cleaned_title.strip()
-
-    # Remove issue numbers after volume number or any non-digit characters
     cleaned_title = re.sub(r'(\D|\sv\d+)\s+\d+', r'\1', cleaned_title)
 
-    # Special case for "2000AD prog"
     if "AD prog" in cleaned_title:
         cleaned_title = cleaned_title.replace("AD prog", "2000AD")
 
