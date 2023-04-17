@@ -7,7 +7,7 @@ scripts_folder = r"C:\Users\user\Documents\Scripts\Weekly Comic Automate"
 script_order = [
     "move_weekly_to_converted.py",
     "convert_and_organize.py",
-    "move_to_nas.py",
+    "MTN2.1",
 ]
 
 # Run the scripts in the defined order
